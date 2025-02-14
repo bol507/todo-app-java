@@ -17,11 +17,16 @@ import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name="users")
-@NamedQuery(name="BY_EMAIL", query="SELECT user FROM UserEntity user WHERE user.email = :email")
-@NamedQuery(name="BY_ID", query="SELECT user FROM UserEntity user WHERE user.id = :id")
-@NamedQuery(name="BY_FULL_NAME", query="SELECT user FROM UserEntity user WHERE user.fullName = :name")
-@NamedQuery(name="ORDER_BY_FULL_NAME", query="SELECT user FROM UserEntity user ORDER BY user.fullName")
+@NamedQuery(name=UserEntity.FIND_USER_BY_EMAIL, query="SELECT user FROM UserEntity user WHERE user.email = :email")
+@NamedQuery(name=UserEntity.FIND_USER_BY_ID, query="SELECT user FROM UserEntity user WHERE user.id = :id")
+@NamedQuery(name=UserEntity.FIND_USER_BY_NAME, query="SELECT user FROM UserEntity user WHERE user.fullName like :name")
+@NamedQuery(name=UserEntity.ORDER_BY_FULL_NAME, query="SELECT user FROM UserEntity user ORDER BY user.fullName")
 public class UserEntity extends AbstractEntity {
+
+  public static final String FIND_USER_BY_EMAIL = "UserEntity.findUserByEmail";
+  public static final String FIND_USER_BY_ID = "UserEntity.findUserById";
+  public static final String FIND_USER_BY_NAME = "UserEntity.findUserByName";
+  public static final String ORDER_BY_FULL_NAME = "UserEntity.orderByFullName";
 
   @Column(length = 100)
   @NotEmpty(message="An email must be set")

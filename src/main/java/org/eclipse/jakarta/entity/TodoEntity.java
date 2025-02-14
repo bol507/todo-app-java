@@ -15,8 +15,10 @@ import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name="todo")
-@NamedQuery(name="ALL_TODO", query = "SELECT todo FROM TodoEntity todo WHERE todo.todoOwner.email = :email")
+@NamedQuery(name=TodoEntity.FIND_ALL_TODO_BY_OWNER_EMAIL, query = "SELECT todo FROM TodoEntity todo WHERE todo.todoOwner.email = :email")
 public class TodoEntity extends AbstractEntity {
+
+  public static final String FIND_ALL_TODO_BY_OWNER_EMAIL = "TodoEntity.findAllTodoByOwnerEmail";
 
   @NotEmpty(message = "A todo task must be set")
   @Size(min=3, max = 150, message="The minimum character length should be 3 and max 150.")
@@ -90,4 +92,11 @@ public class TodoEntity extends AbstractEntity {
     this.isRemainder = isRemainder;
   }
 
+  public UserEntity getTodoOwner() {
+    return todoOwner;
+  }
+
+  public void setTodoOwner(UserEntity todoOwner) {
+    this.todoOwner = todoOwner;
+  }
 }
