@@ -6,12 +6,16 @@ import jakarta.json.bind.annotation.JsonbDateFormat;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 @Entity
+@Table(name="todo")
+@NamedQuery(name="ALL_TODO", query = "SELECT todo FROM TodoEntity todo WHERE todo.todoOwner.email = :email")
 public class TodoEntity extends AbstractEntity {
 
   @NotEmpty(message = "A todo task must be set")
@@ -28,11 +32,15 @@ public class TodoEntity extends AbstractEntity {
   private LocalDate dateCreated;
   private boolean isCompleted;
   private boolean isArchived;
-  private boolean isRemaind;
+  private boolean isRemainder;
 
   @ManyToOne
-  @JoinColumn(name = "User_id")
+  @JoinColumn(name = "todo_owner")
   private UserEntity todoOwner;
+
+  public TodoEntity() {
+    this.dateCreated = LocalDate.now();
+  }
 
   public String getTask() {
     return task;
@@ -74,12 +82,12 @@ public class TodoEntity extends AbstractEntity {
     this.isArchived = isArchived;
   }
 
-  public boolean getIsRemaind() {
-    return isRemaind;
+  public boolean getIsRemainder() {
+    return isRemainder;
   }
 
-  public void setIsRemaind(boolean isRemaind) {
-    this.isRemaind = isRemaind;
+  public void setIsRemainder(boolean isRemainder) {
+    this.isRemainder = isRemainder;
   }
 
 }

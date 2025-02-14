@@ -6,6 +6,8 @@ import jakarta.persistence.Column;
 //import java.util.Collection;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 //import jakarta.persistence.OneToMany;
@@ -14,6 +16,11 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 @Entity
+@Table(name="users")
+@NamedQuery(name="BY_EMAIL", query="SELECT user FROM UserEntity user WHERE user.email = :email")
+@NamedQuery(name="BY_ID", query="SELECT user FROM UserEntity user WHERE user.id = :id")
+@NamedQuery(name="BY_FULL_NAME", query="SELECT user FROM UserEntity user WHERE user.fullName = :name")
+@NamedQuery(name="ORDER_BY_FULL_NAME", query="SELECT user FROM UserEntity user ORDER BY user.fullName")
 public class UserEntity extends AbstractEntity {
 
   @Column(length = 100)
