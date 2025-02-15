@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQuery;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotEmpty;
@@ -40,8 +41,9 @@ public class TodoEntity extends AbstractEntity {
   @JoinColumn(name = "todo_owner")
   private UserEntity todoOwner;
 
-  public TodoEntity() {
-    this.dateCreated = LocalDate.now();
+  @PrePersist
+  public void init() {
+    setDateCreated(LocalDate.now());
   }
 
   public String getTask() {
