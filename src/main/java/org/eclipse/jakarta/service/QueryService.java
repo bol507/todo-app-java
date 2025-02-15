@@ -6,17 +6,31 @@ import java.util.List;
 import org.eclipse.jakarta.entity.TodoEntity;
 import org.eclipse.jakarta.entity.UserEntity;
 
+import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.NonUniqueResultException;
 import jakarta.persistence.PersistenceContext;
 
+@Stateless
 public class QueryService {
   
   @PersistenceContext
   EntityManager entityManager;
 
+  @Inject
+  private SessionService sessionService;
+
   public UserEntity findUserByEmail(String email) {
-    return entityManager.createNamedQuery(UserEntity.FIND_USER_BY_EMAIL, UserEntity.class)
-      .setParameter("email", email).getSingleResult();
+    
+    try {
+      return entityManager.createNamedQuery(UserEntity.FIND_USER_BY_EMAIL, UserEntity.class)
+        .setParameter("email", email).getSingleResult();
+    } catch (NonUniqueResultException |  NoResultException e) {
+      return null;
+    }
+    
   }
 
   public List<UserEntity> findAllUsers() {
@@ -24,8 +38,12 @@ public class QueryService {
   }
 
   public UserEntity findUserById(Long id) {
-    return entityManager.createNamedQuery(UserEntity.FIND_USER_BY_ID, UserEntity.class)
-      .setParameter("id", id).getSingleResult();
+    try {
+      return entityManager.createNamedQuery(UserEntity.FIND_USER_BY_ID, UserEntity.class)
+        .setParameter("id", id).setParameter("email", sessionService.getEmail()).getSingleResult(); 
+    } catch (NonUniqueResultException |  NoResultException e) {
+      return null;
+    }
   }
 
   public Collection<UserEntity> findAllUsersByName(String name) {

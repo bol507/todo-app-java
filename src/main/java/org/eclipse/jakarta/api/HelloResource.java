@@ -1,4 +1,4 @@
-package org.eclipse.jakarta.resource;
+package org.eclipse.jakarta.api;
 
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
@@ -7,7 +7,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 
 @Path("hello")
-public class HelloWorldResource {
+public class HelloResource {
 
   @Path("{name}")
   @GET

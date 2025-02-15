@@ -3,17 +3,21 @@ package org.eclipse.jakarta.service;
 import org.eclipse.jakarta.entity.TodoEntity;
 import org.eclipse.jakarta.entity.UserEntity;
 
+import jakarta.annotation.sql.DataSourceDefinition;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
+@DataSourceDefinition(name = "todo-app-java", className = "org.sqlite.SQLiteDataSource", url = "jdbc:sqlite:sqlite.db")
 @Stateless
 public class PersistenceService {
 
-  @Inject SessionService sessionService;
+  @Inject 
+  private SessionService sessionService;
 
-  @Inject QueryService queryService;
+  @Inject
+  private QueryService queryService;
 
   @PersistenceContext
   EntityManager entityManager;
@@ -34,7 +38,7 @@ public class PersistenceService {
 
     todo.setTodoOwner(null);
 
-    if(todo.getId() == null){
+    if(todo.getId() == null && user != null){
       todo.setTodoOwner(user);
       entityManager.persist(todo);
     }else{
