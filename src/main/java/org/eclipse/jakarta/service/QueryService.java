@@ -7,7 +7,6 @@ import org.eclipse.jakarta.entity.TodoEntity;
 import org.eclipse.jakarta.entity.UserEntity;
 
 import jakarta.ejb.Stateless;
-import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.NonUniqueResultException;
@@ -19,8 +18,6 @@ public class QueryService {
   @PersistenceContext
   EntityManager entityManager;
 
-  @Inject
-  private SessionService sessionService;
 
   public UserEntity findUserByEmail(String email) {
     
@@ -40,7 +37,7 @@ public class QueryService {
   public UserEntity findUserById(Long id) {
     try {
       return entityManager.createNamedQuery(UserEntity.FIND_USER_BY_ID, UserEntity.class)
-        .setParameter("id", id).setParameter("email", sessionService.getEmail()).getSingleResult(); 
+        .setParameter("id", id).getSingleResult(); 
     } catch (NonUniqueResultException |  NoResultException e) {
       return null;
     }

@@ -28,7 +28,7 @@ public class UserEntity extends AbstractEntity {
   public static final String FIND_USER_BY_NAME = "UserEntity.findUserByName";
   public static final String ORDER_BY_FULL_NAME = "UserEntity.orderByFullName";
 
-  @Column(length = 100)
+  @Column(length = 100, unique = true)
   @NotEmpty(message="An email must be set")
   @Email(message="Email must be in the format user@somedomain.com")
   private String email;
