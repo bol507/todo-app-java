@@ -2,6 +2,7 @@ package org.eclipse.jakarta.entity;
 
 import java.time.LocalDate;
 
+import jakarta.inject.Named;
 import jakarta.json.bind.annotation.JsonbDateFormat;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -17,9 +18,15 @@ import jakarta.validation.constraints.Size;
 @Entity
 @Table(name="todo")
 @NamedQuery(name=TodoEntity.FIND_ALL_TODO_BY_OWNER_EMAIL, query = "SELECT todo FROM TodoEntity todo WHERE todo.todoOwner.email = :email")
+@NamedQuery(name=TodoEntity.FIND_TODO_BY_ID, query = "SELECT todo FROM TodoEntity todo WHERE todo.id = :id and todo.todoOwner.email = :email")
+@NamedQuery(name=TodoEntity.FIND_TODO_BY_STATE, query = "SELECT todo FROM TodoEntity todo WHERE todo.isCompleted = :state and todo.todoOwner.email = :email")
+@NamedQuery(name=TodoEntity.FIND_TODO_BY_DUE_DATE, query = "SELECT todo FROM TodoEntity todo WHERE todo.dueDate = :dueDate and todo.todoOwner.email = :email")
 public class TodoEntity extends AbstractEntity {
 
   public static final String FIND_ALL_TODO_BY_OWNER_EMAIL = "TodoEntity.findAllTodoByOwnerEmail";
+  public static final String FIND_TODO_BY_ID = "TodoEntity.findTodoById";
+  public static final String FIND_TODO_BY_STATE = "TodoEntity.findTodoByState";
+  public static final String FIND_TODO_BY_DUE_DATE = "TodoEntity.findTodoByDueDate";
 
   @NotEmpty(message = "A todo task must be set")
   @Size(min=3, max = 150, message="The minimum character length should be 3 and max 150.")
