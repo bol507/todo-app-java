@@ -1,7 +1,8 @@
 package org.eclipse.jakarta.api;
 
 import org.eclipse.jakarta.service.PersistenceService;
-import org.eclipse.jakarta.service.QueryService;
+import org.eclipse.jakarta.service.SecurityService;
+import org.eclipse.jakarta.service.SessionService;
 
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotEmpty;
@@ -20,7 +21,11 @@ public class AuthResource {
 
   @Inject PersistenceService persistenceService;
 
-  @Inject QueryService queryService;
+  @Inject
+  private SecurityService securityService;
+
+  @Inject
+  private SessionService sessionService;
 
   @POST
   @Path("login")
@@ -29,12 +34,19 @@ public class AuthResource {
     @NotEmpty(message = "Email field must be set") @FormParam("email") String email, 
     @NotEmpty(message = "Password field must be set") @FormParam("password") String password
   ){
-    
-    
+    if(!securityService.authenticateUser(email, password)){
+      throw new SecurityException("Email or password is invalid");
+    }
+    String token = securityService.generateToken(email);
+    sessionService.setEmail(email);
+
     return Response
     .ok()
+    .header("Authorization", "Bearer " + token)
     .build();
   }
+
+  
 
 
 }

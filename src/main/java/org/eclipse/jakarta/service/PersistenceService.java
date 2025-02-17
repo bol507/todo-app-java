@@ -1,5 +1,7 @@
 package org.eclipse.jakarta.service;
 
+import java.util.Map;
+
 import org.eclipse.jakarta.entity.TodoEntity;
 import org.eclipse.jakarta.entity.UserEntity;
 import org.eclipse.jakarta.entity.dto.UserUpdateDTO;
@@ -20,15 +22,26 @@ public class PersistenceService {
   @Inject
   private QueryService queryService;
 
+  @Inject
+  private SecurityService securityService;
+
   @PersistenceContext
   EntityManager entityManager;
 
   public UserEntity saveUser(UserEntity user) {
-    if (user.getId() == null) {
-      entityManager.persist(user);
-    } else {
-      entityManager.merge(user);
+    UserEntity existingUser = queryService.findUserByEmail(user.getEmail());
+
+    if (existingUser != null) {
+      throw new IllegalArgumentException("Unauthorized: User already exists");
     }
+    Map<String, String> credentialMap = securityService.hashPassword(user.getPassword());
+    if(user.getId() == null) {
+      user.setPassword(credentialMap.get("hashedPassword"));
+      user.setSalt(credentialMap.get("salt"));
+      entityManager.persist(user);
+    }
+    credentialMap.clear();
+    
     return user;
   }
 

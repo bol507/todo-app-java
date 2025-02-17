@@ -1,5 +1,6 @@
 package org.eclipse.jakarta.service;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -14,6 +15,9 @@ import org.apache.shiro.crypto.hash.Sha512Hash;
 import org.apache.shiro.lang.codec.Hex;
 import org.apache.shiro.lang.util.ByteSource;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 
@@ -23,8 +27,8 @@ public class SecurityService {
   @Inject
   private QueryService queryService;
 
-  public Key generateKey(String keyString) {
-    return new SecretKeySpec(keyString.getBytes(),0, keyString.getBytes().length, "DES");
+  private Key generateKey(String keyString) {
+   return new SecretKeySpec(keyString.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
   }
 
   public boolean authenticateUser(String email, String password) {
@@ -57,6 +61,19 @@ public class SecurityService {
   private ByteSource getSalt(){
     return new SecureRandomNumberGenerator()
     .nextBytes();
+  }
+
+  public String generateToken(String email) {
+        Key key = generateKey(email);
+        byte[] keyBytes = key.getEncoded();
+        Algorithm algorithm = Algorithm.HMAC256(keyBytes);
+
+        
+        return JWT.create()
+                .withSubject(email) 
+                .withIssuedAt(new Date())
+                .withExpiresAt(new Date(System.currentTimeMillis() + 3600000)) // 1 hora
+                .sign(algorithm);
   }
 
 }
