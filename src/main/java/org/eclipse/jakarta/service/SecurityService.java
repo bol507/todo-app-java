@@ -2,12 +2,20 @@ package org.eclipse.jakarta.service;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.shiro.crypto.SecureRandomNumberGenerator;
@@ -40,28 +48,40 @@ public class SecurityService {
   }
 
   public boolean passwordMatch(String dbHashedPassword, String saltText, String plainPassword){
-     ByteSource salt = ByteSource.Util.bytes(Hex.decode(saltText));
+     byte[] salt = Hex.decode(saltText);
      String hashedPassword = hashAndSaltPassword(plainPassword, salt);
-     return hashedPassword.equals(dbHashedPassword);
+     return Arrays.equals(Hex.decode(dbHashedPassword), Hex.decode(hashedPassword));
   }
 
   public Map<String, String> hashPassword(String plainPassword){
-    ByteSource salt = getSalt();
+    byte[] salt = getSalt();
     Map<String, String> credMap = new HashMap<>();
-    credMap.put("hashedPassword",hashAndSaltPassword(plainPassword, salt));
-    credMap.put("salt", salt.toHex());
+    String hashedPassword = hashAndSaltPassword(plainPassword, salt);
+    credMap.put("hashedPassword", bytesToBase64(hashedPassword.getBytes())); // Convierte el hash a HEX
+    credMap.put("salt", bytesToHex(salt));
     return credMap;
   }
 
-  private String hashAndSaltPassword(String plainPassword, ByteSource salt){
-    return new Sha512Hash(plainPassword, salt, 2000000)
-    .toHex();
+  private String hashAndSaltPassword(String plainPassword, byte[] salt) {
+    try{
+      int iterations = 13000;
+      int keyLength = 512;
+      SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
+      PBEKeySpec spec = new PBEKeySpec(plainPassword.toCharArray(), salt, iterations, keyLength);
+      SecretKey key = factory.generateSecret( spec );
+      byte[] hashedPassword = key.getEncoded();
+      return bytesToBase64(hashedPassword);
+    }catch ( NoSuchAlgorithmException | InvalidKeySpecException e ) {
+            throw new RuntimeException( e );
+        }
   }
 
-  private ByteSource getSalt(){
-    return new SecureRandomNumberGenerator()
-    .nextBytes();
-  }
+  private byte[] getSalt() {
+    SecureRandom secureRandom = new SecureRandom();
+    byte[] salt = new byte[16]; 
+    secureRandom.nextBytes(salt);
+    return salt;
+}
 
   public String generateToken(String email) {
         Key key = generateKey(email);
@@ -74,6 +94,18 @@ public class SecurityService {
                 .withIssuedAt(new Date())
                 .withExpiresAt(new Date(System.currentTimeMillis() + 3600000)) // 1 hora
                 .sign(algorithm);
+  }
+
+  private String bytesToHex(byte[] bytes) {
+    StringBuilder sb = new StringBuilder();
+    for (byte b : bytes) {
+        sb.append(String.format("%02x", b));
+    }
+    return sb.toString();
+  }
+
+  private String bytesToBase64(byte[] bytes) {
+    return Base64.getEncoder().encodeToString(bytes);
   }
 
 }

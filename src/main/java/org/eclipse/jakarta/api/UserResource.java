@@ -1,5 +1,8 @@
 package org.eclipse.jakarta.api;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.jakarta.entity.UserEntity;
 import org.eclipse.jakarta.entity.dto.UserUpdateDTO;
 import org.eclipse.jakarta.service.PersistenceService;
@@ -34,8 +37,11 @@ public class UserResource {
     try{
       return Response.ok(queryService.findAllUsers()).build();
     } catch (Exception e) {
+      Map<String, String> errorResponse = new HashMap<>();
+    errorResponse.put("error", "Error creating user" + e.getMessage());
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Error creating user: " + e.getMessage())
+                    .entity(errorResponse)
+                    .type("application/json")
                     .build();
     }  
   }
@@ -64,8 +70,13 @@ public class UserResource {
       return Response.status(Response.Status.NOT_FOUND)
                       .entity(e.getMessage()).build();
     } catch (Exception e) {
+      Map<String, String> errorResponse = new HashMap<>();
+      errorResponse.put("error", "Error updating user");
+
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                     .entity("Error updating user").build();
+      .entity(errorResponse)
+      .type("application/json")
+      .build();
      }
 
   }

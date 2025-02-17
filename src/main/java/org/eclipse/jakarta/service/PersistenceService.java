@@ -2,17 +2,19 @@ package org.eclipse.jakarta.service;
 
 import java.util.Map;
 
+
+
 import org.eclipse.jakarta.entity.TodoEntity;
 import org.eclipse.jakarta.entity.UserEntity;
 import org.eclipse.jakarta.entity.dto.UserUpdateDTO;
-
 import jakarta.annotation.sql.DataSourceDefinition;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceException;
 
-@DataSourceDefinition(name = "todo-app-java", className = "org.sqlite.SQLiteDataSource", url = "jdbc:sqlite:./sqlite.db")
+@DataSourceDefinition(name = "todo-app-java", className = "org.sqlite.SQLiteDataSource", url = "jdbc:sqlite:sqlite.db")
 @Stateless
 public class PersistenceService {
 
@@ -25,24 +27,34 @@ public class PersistenceService {
   @Inject
   private SecurityService securityService;
 
+  
+
   @PersistenceContext
   EntityManager entityManager;
 
   public UserEntity saveUser(UserEntity user) {
-    UserEntity existingUser = queryService.findUserByEmail(user.getEmail());
+    try{
+      UserEntity existingUser = queryService.findUserByEmail(user.getEmail());
 
-    if (existingUser != null) {
-      throw new IllegalArgumentException("Unauthorized: User already exists");
+      if (existingUser != null) {
+        throw new IllegalArgumentException("Unauthorized: User already exists");
+      }
+      Map<String, String> credentialMap = securityService.hashPassword(user.getPassword());
+      if(user.getId() == null) {
+        user.setPassword(credentialMap.get("hashedPassword"));
+        user.setSalt(credentialMap.get("salt"));
+        entityManager.persist(user);
+      }
+      credentialMap.clear();
+      
+      return user;
+    } catch (IllegalArgumentException e) {
+      throw e; 
+    } catch (PersistenceException e) {
+        throw new RuntimeException("Database error: " + e.getMessage(), e);
+    } catch (Exception e) {
+        throw new RuntimeException("Unexpected error: " + e.getMessage(), e);
     }
-    Map<String, String> credentialMap = securityService.hashPassword(user.getPassword());
-    if(user.getId() == null) {
-      user.setPassword(credentialMap.get("hashedPassword"));
-      user.setSalt(credentialMap.get("salt"));
-      entityManager.persist(user);
-    }
-    credentialMap.clear();
-    
-    return user;
   }
 
   public TodoEntity saveTodo(TodoEntity todo) {

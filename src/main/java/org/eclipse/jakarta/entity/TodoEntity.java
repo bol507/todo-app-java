@@ -2,7 +2,6 @@ package org.eclipse.jakarta.entity;
 
 import java.time.LocalDate;
 
-import jakarta.inject.Named;
 import jakarta.json.bind.annotation.JsonbDateFormat;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;

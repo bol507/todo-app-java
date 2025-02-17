@@ -34,8 +34,8 @@ public class UserEntity extends AbstractEntity {
   private String email;
 
   @NotBlank(message="Password cannot be empty")
-  @Size(min=8, max=100, message="Password must be a min of 8 and max of 100 characters")
-  @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[\\$%&#!]).{8,100}$", message="Password must have at least one upper case, " + "one lower case, and must contain at least one of $%&#!")
+  @Size(min=8, message="Password must be a min of 8 and max of 100 characters")
+  //@Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[\\$%&#!]).{8,100}$", message="Password must have at least one upper case, " + "one lower case, and must contain at least one of $%&#!")
   private String password;
 
   @NotEmpty(message="Name must be set")
