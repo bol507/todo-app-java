@@ -42,6 +42,8 @@ public class UserEntity extends AbstractEntity {
   @Size(min=2, max=100, message="Name must be a min of 2 and max 100 characters ")
   private String fullName;
 
+  private String salt;
+
   //@OneToMany
   //private final Collection<TodoEntity> todos = new ArrayList<>();
 
@@ -67,5 +69,13 @@ public class UserEntity extends AbstractEntity {
 
   public void setFullName(String fullName) {
     this.fullName = fullName;
+  }
+
+  public String getSalt(){
+    return salt;
+  }
+
+  public void setSalt(String salt){
+    this.salt = salt;
   }
 }
