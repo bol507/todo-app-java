@@ -3,6 +3,7 @@ package org.eclipse.jakarta.api;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.jakarta.config.SecureAuth;
 import org.eclipse.jakarta.entity.UserEntity;
 import org.eclipse.jakarta.entity.dto.UserUpdateDTO;
 import org.eclipse.jakarta.service.PersistenceService;
@@ -61,6 +62,7 @@ public class UserResource {
 
   @PUT
   @Path("{id}")
+  @SecureAuth
   public Response updateUser(@PathParam("id") @NotNull Long id, @Valid UserUpdateDTO user){
     try{
       UserEntity updatedUser = persistenceService.updateUser(id, user);

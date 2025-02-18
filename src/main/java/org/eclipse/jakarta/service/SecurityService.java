@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -25,9 +26,12 @@ import org.apache.shiro.lang.util.ByteSource;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.auth0.jwt.interfaces.JWTVerifier;
 
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
+import jakarta.security.enterprise.identitystore.openid.Claims;
 
 @RequestScoped
 public class SecurityService {
@@ -35,7 +39,7 @@ public class SecurityService {
   @Inject
   private QueryService queryService;
 
-  private Key generateKey(String keyString) {
+  public Key generateKey(String keyString) {
    return new SecretKeySpec(keyString.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
   }
 
@@ -90,7 +94,8 @@ public class SecurityService {
 
         
         return JWT.create()
-                .withSubject(email) 
+                .withSubject("User Authentication") 
+                .withClaim("email", email)
                 .withIssuedAt(new Date())
                 .withExpiresAt(new Date(System.currentTimeMillis() + 3600000)) // 1 hora
                 .sign(algorithm);
@@ -107,5 +112,26 @@ public class SecurityService {
   private String bytesToBase64(byte[] bytes) {
     return Base64.getEncoder().encodeToString(bytes);
   }
+
+  public DecodedJWT validateTokenAndDecodeToken(String token, Key key) {
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(key.getEncoded()); 
+            JWTVerifier verifier = JWT.require(algorithm)
+                .build(); 
+
+            DecodedJWT jwt = verifier.verify(token); 
+
+            Date expirationDate = jwt.getExpiresAt();
+            if (expirationDate != null && expirationDate.before(new Date())) {
+                return null; 
+            }
+            
+            return jwt; 
+
+        } catch (Exception e) {
+            
+            return null; 
+        }
+    }
 
 }

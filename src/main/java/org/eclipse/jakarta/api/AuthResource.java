@@ -1,5 +1,6 @@
 package org.eclipse.jakarta.api;
 
+import org.eclipse.jakarta.config.SecurityFilter;
 import org.eclipse.jakarta.service.PersistenceService;
 import org.eclipse.jakarta.service.SecurityService;
 import org.eclipse.jakarta.service.SessionService;
@@ -13,6 +14,8 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
+import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;
 
 @Path("auth")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -29,7 +32,7 @@ public class AuthResource {
 
   @POST
   @Path("login")
-  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response login(
     @NotEmpty(message = "Email field must be set") @FormParam("email") String email, 
     @NotEmpty(message = "Password field must be set") @FormParam("password") String password
@@ -42,7 +45,7 @@ public class AuthResource {
 
     return Response
     .ok()
-    .header("Authorization", "Bearer " + token)
+    .header(AUTHORIZATION, SecurityFilter.BEARER + token)
     .build();
   }
 
