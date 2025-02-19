@@ -1,8 +1,7 @@
 package org.eclipse.jakarta.exception;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
@@ -10,20 +9,25 @@ import jakarta.ws.rs.ext.Provider;
 
 @Provider
 public class ValidationExceptionMapper implements ExceptionMapper<ConstraintViolationException> {
+    
     @Override
     public Response toResponse(ConstraintViolationException exception) {
-      Map<String, String> validationErrors = new HashMap<>();
+      
+
+      JsonObjectBuilder errorBuilder = Json.createObjectBuilder().add("error", "There were errors in the request");
+      JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+
       exception.getConstraintViolations().forEach(violation -> {
-        String propertyName = violation.getPropertyPath().toString();
-            if (propertyName.contains(".")) {
-                propertyName = propertyName.substring(propertyName.lastIndexOf('.') + 1);
-            }
+        String propertyName = violation.getPropertyPath().toString().split("\\.")[2];
         String errorMessage = violation.getMessage();
-        validationErrors.put(propertyName, errorMessage);
+        
+        objectBuilder.add(propertyName, errorMessage);
       });
 
-      return Response.status(Response.Status.BAD_REQUEST)
-                   .entity(validationErrors)
+      errorBuilder.add("validationErrors", objectBuilder);
+
+      return Response.status(Response.Status.EXPECTATION_FAILED)
+                   .entity(errorBuilder.build())
                    .type("application/json")
                    .build();
     }

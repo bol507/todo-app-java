@@ -7,12 +7,15 @@ import java.util.List;
 import org.eclipse.jakarta.entity.TodoEntity;
 import org.eclipse.jakarta.entity.UserEntity;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.NonUniqueResultException;
 import jakarta.persistence.PersistenceContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.SecurityContext;
 
 @Stateless
 public class QueryService {
@@ -20,8 +23,22 @@ public class QueryService {
   @PersistenceContext
   EntityManager entityManager;
 
-  @Inject
+  /*@Inject
   private SessionService sessionService;
+  */
+
+  @Inject
+  private SecurityService securityService;
+
+  @Context
+  private SecurityContext securityContext;
+
+  private String userEmail;
+
+  @PostConstruct
+  public void init() {
+    userEmail = securityContext.getUserPrincipal().getName();
+  }
 
 
   public UserEntity findUserByEmail(String email) {
@@ -55,14 +72,14 @@ public class QueryService {
 
   public Collection<TodoEntity> findAllTodos() {
     return entityManager.createNamedQuery(TodoEntity.FIND_ALL_TODO_BY_OWNER_EMAIL, TodoEntity.class)
-      .setParameter("email", sessionService.getEmail()).getResultList();
+      .setParameter("email", userEmail).getResultList();
   }
 
   public TodoEntity findTodoById(Long id) {
     
     List<TodoEntity> result = entityManager.createNamedQuery(TodoEntity.FIND_TODO_BY_ID, TodoEntity.class)
     .setParameter("id", id)
-    .setParameter("email", sessionService.getEmail())
+    .setParameter("email", userEmail)
     .getResultList();
     
     if (result.isEmpty()) {
@@ -84,7 +101,7 @@ public class QueryService {
   public List<TodoEntity> getTodoByState(boolean state) {
     return entityManager.createNamedQuery(TodoEntity.FIND_TODO_BY_STATE, TodoEntity.class)
       .setParameter("state", state)
-      .setParameter("email", sessionService.getEmail())
+      .setParameter("email", userEmail)
       .getResultList();
   }
 
@@ -99,7 +116,7 @@ public class QueryService {
   public List<TodoEntity> getByDueDate(LocalDate dueDate) {
     return entityManager.createNamedQuery(TodoEntity.FIND_TODO_BY_DUE_DATE, TodoEntity.class)
       .setParameter("dueDate", dueDate)
-      .setParameter("email", sessionService.getEmail())
+      .setParameter("email", userEmail)
       .getResultList();
   }
 
@@ -110,6 +127,15 @@ public class QueryService {
     }
     todo.setIsArchived(true);
     entityManager.merge(todo);
+  }
+
+  public boolean authenticateUser(String email, String password) {
+    UserEntity user = findUserByEmail(email);
+    if (user == null) {
+      return false;
+    }
+    return securityService.passwordMatch(user.getPassword(), user.getSalt(), password); 
+
   }
 
 }
